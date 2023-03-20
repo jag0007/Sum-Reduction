@@ -1,0 +1,38 @@
+This runs a script in the current directory via the queue system
+Report problems and post questions to the HPC staff (hpc@asc.edu)
+ 
+ 
+[7mChoose a batch job queue:[27m
+ 
+gpu                       360:00:00    120gb     1-24
+class                      12:00:00     64gb     1-60
+ 
+[31mYour job will have a shorter wait time if your memory request is
+[31mreasonable (about 20% more than needed), and your time request is
+[31mreasonable (about 50% more than needed).
+[31mFind this out by running 'jobinfo -j JOB_NUMBER' for a correctly
+[31mcompleted job.(B[0m
+ 
+ 
+ 
+ 
+ 
+ 
+
+Enter a name for your job (default: runTestsshGPU)
+ 
+============================================================
+=====         Summary of your GPU        job           =====
+============================================================
+  The script file is: .runTests.sh
+  The time limit is 12:00:00 HH:MM:SS.
+  The memory limit is: 10gb
+  The job will start running after: 2023-03-19T17:56:38
+  Job Name: reduce_test
+  Virtual queue: class
+  QOS: --qos=class
+  Constraints: 
+  Queue submit command:
+sbatch --qos=class  -J reduce_test --begin=2023-03-19T17:56:38 --requeue --mail-user=jag0035@uah.edu -o reduce_test.o%A -t 12:00:00 --gres=gpu:ampere:1 -N 1-1 -n 1 --mem-per-cpu=10000mb  
+
+Submitted batch job 998567

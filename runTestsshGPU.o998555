@@ -1,0 +1,43 @@
+setting dmc scratch directory
+ 
+============================================================
+=====         Summary of your GPU job                  =====
+============================================================
+  The script file is: .runTests.sh
+  The time limit is 01:00:00 HH:MM:SS.
+  The target directory is: /home/uahclsc0008/repos/Sum-Reduction
+  The working directory is:  /scratch-local/uahclsc0008.runTestsshGPU.998555
+  The memory limit is: 10gb
+  The job will start running after: 2023-03-19T17:25:09
+  Job Name: runTestsshGPU
+  Virtual queue: gpu
+  QOS: --qos=gpu
+  Constraints: 
+  Using  1  cores on master node  dmc203
+  Node list:  dmc203
+  Nodes:  dmc203
+  Command typed:
+/apps/scripts/run_gpu .runTests.sh     
+  Queue submit command:
+sbatch --qos=gpu -J runTestsshGPU --begin=2023-03-19T17:25:09 --requeue --mail-user=jag0035@uah.edu -o runTestsshGPU.o998555 -t 01:00:00 --gres=gpu:ampere:1 -N 1-1 -n 1 --mem-per-cpu=10000mb  
+ 
+Assigning GPU 3 to this job.
+
+The following have been reloaded with a version change:
+  1) gcc/6.1.0 => gcc/9.3.0
+
+
+
+Waiting for job to start...
+
+==================
+Starting execution
+==================
+
+./.runTests.sh: line 18: build/bin/sumReduce_test: No such file or directory
+
+==================
+Finished execution
+==================
+
+Hit Ctrl + C to exit...
