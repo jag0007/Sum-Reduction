@@ -15,7 +15,7 @@ echo -ne "==================\n\n"
 
 # ncu -k saxpy_kernel -o profile build/bin/saxpy_test
 
-build/bin/reduce_test 0 5 
+build/bin/reduce_test 0 8 
 #echo -ne "\n\nNext\n\n"
 #echo -ne "Running Timer Test\n"
 #build/bin/timer_test

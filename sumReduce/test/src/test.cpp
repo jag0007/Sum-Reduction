@@ -7,10 +7,11 @@
 #include <cuda_runtime.h>
 #include <helper_cuda.h>
 #include <sumReduce.h>
+#include <functional>
 
 std::vector<int> parseInputParams(int, char**);
 template <typename T> std::vector<T> getListOfRandomValues(int);
-template <typename T> T sumReduce(T*, int, T);
+float sumReduce(float*, int, float, sumType);
 template <typename T> void printVector(std::vector<T>, const char*);
 
 int main(int argc, char *argv[]) {
@@ -28,38 +29,60 @@ int main(int argc, char *argv[]) {
     std::cout << "sum: " << sum << std::endl;
 
     //auto gpuSum = sumReduce(values.data(), values.size(), 0.0f);
-    auto gpuSum = sumReduce(values.data(), values.size(), 0.0f);
-
-    std::cout << "gpuSum: " << gpuSum << std::endl;
-
+    std::vector<sumType> sumTypes = { sumType::SUM, sumType::ATOMIC, sumType::SEG, sumType::COAL, sumType::SHARED, sumType::COARSE };
+    for (sumType type : sumTypes) {
+        auto gpuSum = sumReduce(values.data(), values.size(), 0.0f, type);
+        std::cout << "gpuSum: " << gpuSum << std::endl;
+    }
 }
 
-template <typename T>
-T sumReduce(T* inputValues, int N, T initialValue) {
+float sumReduce(float* inputValues, int N, float initialValue, sumType sum_type) {
     float * input = nullptr;
-    float * initial = nullptr;
-    size_t inputSize = N * sizeof(T);
-    size_t initialSize = sizeof(T);
-
-    // allocate memory on GPU
+    size_t inputSize = N * sizeof(float);
     checkCudaErrors(cudaMalloc(&input, inputSize));
-    checkCudaErrors(cudaMalloc(&initial, initialSize));
-
-    // load it up
     checkCudaErrors(cudaMemcpy(input, inputValues, inputSize, cudaMemcpyHostToDevice));
-    //checkCudaErrors(cudaMemcpy(initial, &initialValue, initialSize, cudaMemcpyHostToDevice));
 
-    //sum<T>(input, N, initial);
-    //sum_atomic<T>(input, N, initial);
-    sum_seg_reduction<T>(input, N);
+    float * initial = nullptr;
+    size_t initialSize = sizeof(float);
+    checkCudaErrors(cudaMalloc(&initial, initialSize));
+    checkCudaErrors(cudaMemcpy(initial, &initialValue, initialSize, cudaMemcpyHostToDevice));
+
+    void (*sum_func) (float*, int, float*);
+    switch (sum_type) {
+        case sumType::SUM:
+            sum_func = &sum<float>;
+            break;
+        case sumType::ATOMIC:
+            sum_func = &sum_atomic<float>;
+            break;
+        case sumType::SEG:
+            sum_func = &sum_seg_reduction<float>;
+            break;
+        case sumType::COAL:
+            sum_func = &sum_coalecsing<float>;
+            break;
+        case sumType::SHARED:
+            sum_func = &sum_shared_mem<float>;
+            break;
+        case sumType::COARSE:
+            sum_func = &sum_coarsened<float>;
+            break;
+    }
+
+    // for timer besting
+    sum_func(input, N, initial);
 
     // read back result
-    T result;
-    //checkCudaErrors(cudaMemcpy(&result, initial, sizeof(T), cudaMemcpyDeviceToHost));
-    checkCudaErrors(cudaMemcpy(&result, input, sizeof(T), cudaMemcpyDeviceToHost));
+    float result;
+    if (sum_type != sumType::SUM){
+        checkCudaErrors(cudaMemcpy(&result, initial, sizeof(float), cudaMemcpyDeviceToHost));
+    } else {
+        checkCudaErrors(cudaMemcpy(&result, input, sizeof(float), cudaMemcpyDeviceToHost));
+    }
 
     // free
     checkCudaErrors(cudaFree(input));
+    checkCudaErrors(cudaFree(initial));
 
     return result;
 }
@@ -96,6 +119,6 @@ std::vector<T> getListOfRandomValues(int listLength) {
         output.push_back(unif(re));
     }
 
-
-    return output;
+    std::vector<float> out = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f, 16.0f};
+    return out;
 }
