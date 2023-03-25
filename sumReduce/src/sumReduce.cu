@@ -53,13 +53,13 @@ __global__ void sum_shared_mem_kernel(T* input, int N, T* output) {
     unsigned int segment = 2*blockDim.x*blockIdx.x;
     unsigned int i = segment + threadIdx.x;
 
+    
     // Load data to shared memory
     extern __shared__ float input_s[];
     input_s[threadIdx.x] = input[i] + input[i + blockDim.x];
     __syncthreads();
-
     // Reduction tree in shared memory
-    for (unsigned int stride = blockDim.x; stride > 0; stride /= 2) {
+    for (unsigned int stride = blockDim.x/2; stride > 0; stride /= 2) {
         if(threadIdx.x < stride) {
             input_s[threadIdx.x] += input_s[threadIdx.x + stride];
         }
@@ -110,7 +110,7 @@ void sum_coarsened(T* input, int N, T* output){
     dim3 blockDim(blockSize);
     dim3 gridDim(gridSize);
 
-    sum_coarsened_kernel<<<gridDim, blockDim, blockSize>>>(input, N, output, coarse_factor);
+    sum_coarsened_kernel<<<gridDim, blockDim, blockSize*sizeof(T)>>>(input, N, output, coarse_factor);
     checkCudaErrors(cudaGetLastError()); 
 }
 
@@ -124,7 +124,7 @@ void sum_shared_mem(T* input, int N, T* output){
     dim3 blockDim(blockSize);
     dim3 gridDim(gridSize);
 
-    sum_shared_mem_kernel<<<gridDim, blockDim, blockSize>>>(input, N, output);
+    sum_shared_mem_kernel<<<gridDim, blockDim, blockSize*sizeof(T)>>>(input, N, output);
     checkCudaErrors(cudaGetLastError());
 }
 
